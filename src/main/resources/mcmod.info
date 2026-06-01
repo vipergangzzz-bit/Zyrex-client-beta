@@ -1,0 +1,10 @@
+[{
+    "modid": "zyrex",
+    "name": "ZyRex",
+    "description": "ZyRex mod for Minecraft 1.8.9",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "authors": [],
+    "credits": ""
+}]
