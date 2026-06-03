@@ -7,4 +7,13 @@
     "url": "",
     "authors": [],
     "credits": ""
+},{
+    "modid": "borderlessfullscreen",
+    "name": "Borderless Fullscreen",
+    "description": "Replace Minecraft's fullscreen with a borderless window",
+    "version": "${version}",
+    "mcversion": "1.8.9",
+    "url": "",
+    "authorList": ["skyiswinning"],
+    "credits": ""
 }]

@@ -11,20 +11,19 @@ import java.io.IOException;
 import java.util.List;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
-import org.lwjgl.input.Keyboard;
 
 public class ClickGUI extends GuiScreen {
     private final ModuleManager moduleManager;
     private static Category selectedCategory = Category.Combat;
     private Module expandedModule;
     private boolean binding;
+    private GuiScreen previousScreen;
+    private boolean showOverPowered;
     private Setting draggedSetting;
-    private int animTick;
 
-    private int sidebarW, mainX, mainW, contentY, rowH = 26;
+    private int sidebarW, mainX, mainW, rowH = 26;
     private int settingsW = 180;
 
-    // palette
     private static final int BG = 0xF0080808;
     private static final int SIDEBAR = 0xF00A0A0A;
     private static final int PANEL = 0xF0111111;
@@ -38,14 +37,19 @@ public class ClickGUI extends GuiScreen {
     private static final int SUBTLE = 0xFF444444;
     private static final int TRACK_BG = 0xFF222222;
     private static final int KNOB = 0xFFDDDDDD;
-    private static final int BADGE = 0xFF1A1A1A;
 
-    // category icons
-    private static final String[] CAT_ICONS = {"\u2694", "\u26A1", "\uD83D\uDEE1", "\uD83D\uDD11"};
-    // ⚔ ☠ for combat, ⚡ for movement, 🛡 for player, 🔑 for exploit
+    private static final String[] CAT_ICONS = { "\u2694", "\u26A1", "\uD83D\uDEE1", "\uD83D\uDD11", "\uD83D\uDCA5" };
 
     public ClickGUI(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
+    }
+
+    public void setPreviousScreen(GuiScreen screen) {
+        this.previousScreen = screen;
+    }
+
+    public void setShowOverPowered(boolean show) {
+        this.showOverPowered = show;
     }
 
     @Override
@@ -54,32 +58,27 @@ public class ClickGUI extends GuiScreen {
         sidebarW = Math.max(sidebarW, 80);
         mainX = sidebarW + 1;
         mainW = (int) Math.min(380, width * 0.28);
-        contentY = 0;
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        animTick++;
-
         Gui.drawRect(0, 0, width, height, BG);
 
-        // sidebar with border glow
         Gui.drawRect(0, 0, sidebarW, height, SIDEBAR);
         drawGradRect(sidebarW, 0, sidebarW + 1, height, ACCENT, (ACCENT & 0x00FFFFFF) | 0x30000000);
 
-        // logo area
         mc.fontRendererObj.drawString("ZyRex", 14, 14, ACCENT, false);
         mc.fontRendererObj.drawString("v1.0", 14, 26, SUBTLE, false);
 
-        // separator under logo
         Gui.drawRect(12, 38, sidebarW - 12, 39, BORDER);
 
-        // categories
         int catY = 50;
         int catH = 34;
         Category[] cats = Category.values();
         for (int i = 0; i < cats.length; i++) {
             Category cat = cats[i];
+            if (cat == Category.OverPowered && !showOverPowered)
+                continue;
             boolean active = cat == selectedCategory;
             boolean hovered = mouseX >= 2 && mouseX <= sidebarW && mouseY >= catY && mouseY <= catY + catH;
 
@@ -103,12 +102,10 @@ public class ClickGUI extends GuiScreen {
             catY += catH;
         }
 
-        // main panel
         int panelH = height;
         Gui.drawRect(mainX, 0, mainX + mainW, panelH, PANEL);
         Gui.drawRect(mainX + mainW, 0, mainX + mainW + 1, panelH, BORDER);
 
-        // header
         int headerH = 38;
         Gui.drawRect(mainX + 1, 1, mainX + mainW - 1, headerH, 0xFF0D0D0D);
         Gui.drawRect(mainX + 12, headerH - 1, mainX + mainW - 12, headerH, BORDER);
@@ -119,7 +116,6 @@ public class ClickGUI extends GuiScreen {
         mc.fontRendererObj.drawString(headerTitle, mainX + 14, 12, TEXT, false);
         mc.fontRendererObj.drawString(headerCount, mainX + 14, 24, SUBTLE, false);
 
-        // modules
         int modY = headerH + 4;
         int modPad = 6;
         int modGap = 3;
@@ -128,15 +124,12 @@ public class ClickGUI extends GuiScreen {
             boolean hovered = mouseX >= mainX + 4 && mouseX <= mainX + mainW - 4
                     && mouseY >= modY && mouseY <= modY + rowH;
 
-            // card background
             Gui.drawRect(mainX + modPad, modY, mainX + mainW - modPad, modY + rowH,
                     hovered ? CARD_HOVER : CARD);
 
-            // subtle left accent if enabled
             if (m.isEnabled())
                 Gui.drawRect(mainX + modPad, modY, mainX + modPad + 2, modY + rowH, ACCENT);
 
-            // keybind badge
             int nameX = mainX + modPad + 10;
             if (m.getKey() != -1) {
                 String keyStr = m.getKeyDisplay();
@@ -147,10 +140,8 @@ public class ClickGUI extends GuiScreen {
                 nameX += kw + 4;
             }
 
-            // module name
             mc.fontRendererObj.drawString(m.getName(), nameX, modY + 6, hovered ? TEXT : 0xFFCCCCCC, false);
 
-            // toggle switch (pill)
             int toggleX = mainX + mainW - modPad - 32;
             int toggleY = modY + 6;
             int toggleW = 26;
@@ -168,7 +159,6 @@ public class ClickGUI extends GuiScreen {
             modY += rowH + modGap;
         }
 
-        // settings panel
         if (expandedModule != null) {
             int setX = mainX + mainW + 2;
             int setY = 0;
@@ -178,14 +168,15 @@ public class ClickGUI extends GuiScreen {
             Gui.drawRect(setX, setY, setX + setW, setY + setH, PANEL);
             Gui.drawRect(setX, setY, setX + 1, setY + setH, BORDER);
 
-            // settings header
             Gui.drawRect(setX + 1, 1, setX + setW - 1, headerH, 0xFF0D0D0D);
             Gui.drawRect(setX + 12, headerH - 1, setX + setW - 12, headerH, BORDER);
 
             String setTitle = expandedModule.getName();
-            if (binding) setTitle = "\u2190 Press a key...";
+            if (binding)
+                setTitle = "\u2190 Press a key...";
             mc.fontRendererObj.drawString(setTitle, setX + 14, 12, binding ? ACCENT : TEXT, false);
-            mc.fontRendererObj.drawString(expandedModule.getSettings().size() + " settings", setX + 14, 24, SUBTLE, false);
+            mc.fontRendererObj.drawString(expandedModule.getSettings().size() + " settings", setX + 14, 24, SUBTLE,
+                    false);
 
             int setRowY = headerH + 8;
             for (Setting s : expandedModule.getSettings()) {
@@ -211,7 +202,6 @@ public class ClickGUI extends GuiScreen {
                         drawGradRect(sliderX, sliderY, fillEnd, sliderY + sliderH, ACCENT,
                                 new Color(139, 67, 186, 180).getRGB());
 
-                    // knob
                     int knobX = fillEnd;
                     Gui.drawRect(knobX - 2, sliderY - 2, knobX + 3, sliderY + sliderH + 2, KNOB);
 
@@ -219,7 +209,6 @@ public class ClickGUI extends GuiScreen {
                     mc.fontRendererObj.drawString(valStr, sliderX + sliderW + 8, sliderY - 2, TEXT, false);
 
                 } else if (s instanceof ModeSetting) {
-                    int mx = setX + setW - 12 - mc.fontRendererObj.getStringWidth(s.getDisplayValue());
                     mc.fontRendererObj.drawString("\u25C0 " + s.getDisplayValue() + " \u25B6",
                             setX + 12, setRowY + 14, ACCENT, false);
                 } else {
@@ -258,11 +247,14 @@ public class ClickGUI extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        // category click
         int catY = 50;
         int catH = 34;
         Category[] cats = Category.values();
         for (Category cat : cats) {
+            if (cat == Category.OverPowered && !showOverPowered) {
+                catY += catH;
+                continue;
+            }
             if (mouseX >= 2 && mouseX <= sidebarW && mouseY >= catY && mouseY <= catY + catH) {
                 selectedCategory = cat;
                 expandedModule = null;
@@ -272,11 +264,9 @@ public class ClickGUI extends GuiScreen {
             catY += catH;
         }
 
-        // module click
         int headerH = 38;
         List<Module> modules = moduleManager.getModulesByCategory(selectedCategory);
         int modY = headerH + 4;
-        int modPad = 6;
         int modGap = 3;
 
         for (Module m : modules) {
@@ -296,7 +286,6 @@ public class ClickGUI extends GuiScreen {
             modY += rowH + modGap;
         }
 
-        // settings clicks
         if (expandedModule != null) {
             int setX = mainX + mainW + 2;
             int setRowY = headerH + 8;
@@ -362,6 +351,15 @@ public class ClickGUI extends GuiScreen {
                 expandedModule.setKey(keyCode);
                 binding = false;
             }
+            return;
+        }
+        if (keyCode == 1) {
+            if (previousScreen != null) {
+                mc.displayGuiScreen(previousScreen);
+                previousScreen = null;
+                return;
+            }
+            mc.displayGuiScreen(null);
             return;
         }
         super.keyTyped(typedChar, keyCode);

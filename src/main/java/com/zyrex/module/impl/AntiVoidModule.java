@@ -24,19 +24,24 @@ public class AntiVoidModule extends Module {
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-        if (!isEnabled()) return;
-        if (mc.theWorld == null || mc.thePlayer == null) return;
+        if (event.phase != TickEvent.Phase.END)
+            return;
+        if (!isEnabled())
+            return;
+        if (mc.theWorld == null || mc.thePlayer == null)
+            return;
 
         ticks++;
 
-        if (mc.thePlayer.fallDistance < fallDistance.getValue()) return;
-        if (ticks <= delay.getValue()) return;
+        if (mc.thePlayer.fallDistance < fallDistance.getValue())
+            return;
+        if (ticks <= delay.getValue())
+            return;
 
         String m = mode.getValue();
         if (m.equals("Packet")) {
             mc.thePlayer.sendQueue.addToSendQueue(new C03PacketPlayer.C04PacketPlayerPosition(
-                mc.thePlayer.posX, mc.thePlayer.posY + 5, mc.thePlayer.posZ, false));
+                    mc.thePlayer.posX, mc.thePlayer.posY + 5, mc.thePlayer.posZ, false));
         } else if (m.equals("Motion")) {
             mc.thePlayer.motionY = 0.5;
         } else if (m.equals("Hypixel")) {

@@ -39,12 +39,8 @@ public class Module {
 
     protected void onEnable() {}
     protected void onDisable() {}
-    protected void onUpdate() {}
 
     protected void addSetting(Setting setting) { settings.add(setting); }
-
-    public String suffix() { return ""; }
-    public void cycleMode() {}
 
     public String getKeyDisplay() {
         if (key == -1) return "NONE";

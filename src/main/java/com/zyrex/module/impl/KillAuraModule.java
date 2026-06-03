@@ -33,8 +33,6 @@ public class KillAuraModule extends Module {
 
     private EntityLivingBase target;
     private int attackCooldown;
-    private float currentYaw, currentPitch;
-    private boolean rotating;
 
     public KillAuraModule() {
         super("Kill Aura", Category.Combat);
@@ -60,18 +58,12 @@ public class KillAuraModule extends Module {
         if (attackCooldown > 0) attackCooldown--;
 
         target = findTarget();
-        if (target == null) {
-            rotating = false;
-            return;
-        }
+        if (target == null) return;
 
         float[] rotations = getRotations(target);
         if (rotationMode.getValue().equals("Normal")) {
             mc.thePlayer.rotationYaw = rotations[0];
             mc.thePlayer.rotationPitch = rotations[1];
-        } else if (rotationMode.getValue().equals("Silent")) {
-            smoothRotate(rotations[0], rotations[1]);
-            rotating = true;
         }
 
         if (attackCooldown <= 0 && canAttack()) {
@@ -165,12 +157,6 @@ public class KillAuraModule extends Module {
         return new float[]{MathHelper.wrapAngleTo180_float(yaw), MathHelper.wrapAngleTo180_float(pitch)};
     }
 
-    private void smoothRotate(float targetYaw, float targetPitch) {
-        float speed = (float)(rotationSpeed.getValue());
-        currentYaw += MathHelper.wrapAngleTo180_float(targetYaw - currentYaw) * speed / 10;
-        currentPitch += MathHelper.wrapAngleTo180_float(targetPitch - currentPitch) * speed / 10;
-    }
-
     private void attack(Entity entity) {
         mc.thePlayer.swingItem();
         mc.thePlayer.sendQueue.addToSendQueue(new C02PacketUseEntity(entity, C02PacketUseEntity.Action.ATTACK));
@@ -178,7 +164,6 @@ public class KillAuraModule extends Module {
 
     @Override
     protected void onDisable() {
-        rotating = false;
         target = null;
     }
 }

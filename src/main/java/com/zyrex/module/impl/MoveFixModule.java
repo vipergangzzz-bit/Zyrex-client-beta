@@ -3,8 +3,6 @@ package com.zyrex.module.impl;
 import com.zyrex.module.Category;
 import com.zyrex.module.Module;
 import com.zyrex.setting.ModeSetting;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class MoveFixModule extends Module {
     private final ModeSetting mode = new ModeSetting("Mode", "Silent", "Strict");
@@ -30,6 +28,4 @@ public class MoveFixModule extends Module {
         return fixed;
     }
 
-    @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) { }
 }

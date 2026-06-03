@@ -52,10 +52,8 @@ public class AntiBotModule extends Module {
     }
 
     private boolean isBotCheck(Entity entity) {
-        // not in tab list = bot
         if (!tabNames.contains(entity.getName())) return true;
 
-        // no armor = bot (bedrock/cheater bots usually have no armor)
         if (entity instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) entity;
             boolean hasArmor = false;
@@ -81,7 +79,4 @@ public class AntiBotModule extends Module {
         return false;
     }
 
-    public boolean isBotEntity(Entity entity) {
-        return botEntities.contains(entity);
-    }
 }

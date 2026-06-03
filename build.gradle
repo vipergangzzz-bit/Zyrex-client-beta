@@ -37,6 +37,8 @@ minecraft {
 
 dependencies {
     compile 'org.jetbrains.kotlin:kotlin-stdlib:1.3.72'
+    compile 'net.java.dev.jna:jna:5.15.0'
+    compile 'net.java.dev.jna:jna-platform:5.15.0'
 }
 
 processResources {
@@ -54,10 +56,19 @@ processResources {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
-        configurations.compile.findAll { it.name.contains("kotlin") }.collect {
+        configurations.compile.findAll { it.name.contains("kotlin") || it.name.contains("jna") }.collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    manifest {
+        attributes(
+                "FMLCorePlugin": "ng.skyiswinni.borderless.forge.FMLLoadingPlugin",
+                "FMLCorePluginContainsFMLMod": "true",
+                "FMLAT": "borderless_at.cfg",
+                "ModSide": "CLIENT"
+        )
+    }
 }

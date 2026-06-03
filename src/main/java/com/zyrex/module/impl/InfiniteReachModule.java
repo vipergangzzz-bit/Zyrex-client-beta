@@ -111,17 +111,4 @@ public class InfiniteReachModule extends Module {
         return targets;
     }
 
-    private float getYaw(EntityLivingBase target) {
-        double dx = target.posX - mc.thePlayer.posX;
-        double dz = target.posZ - mc.thePlayer.posZ;
-        return (float) (Math.atan2(dz, dx) * 180 / Math.PI) - 90;
-    }
-
-    private float getPitch(EntityLivingBase target) {
-        double dx = target.posX - mc.thePlayer.posX;
-        double dz = target.posZ - mc.thePlayer.posZ;
-        double dy = target.posY + target.getEyeHeight() - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
-        double dist = Math.sqrt(dx * dx + dz * dz);
-        return (float) -(Math.atan2(dy, dist) * 180 / Math.PI);
-    }
 }

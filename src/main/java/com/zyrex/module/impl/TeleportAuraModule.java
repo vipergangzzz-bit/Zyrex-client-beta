@@ -25,7 +25,7 @@ public class TeleportAuraModule extends Module {
     private int cooldown;
 
     public TeleportAuraModule() {
-        super("Teleport Aura", Category.Combat);
+        super("Teleport Aura", Category.OverPowered);
         addSetting(range);
         addSetting(cps);
         addSetting(priority);
